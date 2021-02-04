@@ -34,14 +34,12 @@ class TranslationBuilder(object):
 
     def _build_target_tokens(self, src, src_vocab, src_raw, pred, attn):
         tgt_field = dict(self.fields)["tgt"].base_field
+        eos_idx = tgt_field.vocab.stoi[tgt_field.eos_token]
         vocab = tgt_field.vocab
         tokens = []
         for tok in pred:
-            if tok < len(vocab):
-                tokens.append(vocab.itos[tok])
-            else:
-                tokens.append(src_vocab.itos[tok - len(vocab)])
-            if tokens[-1] == tgt_field.eos_token:
+            tokens.append(str(tok.item()))
+            if tokens[-1] == eos_idx:
                 tokens = tokens[:-1]
                 break
         if self.replace_unk and attn is not None and src is not None:

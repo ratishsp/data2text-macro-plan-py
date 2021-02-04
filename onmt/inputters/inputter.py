@@ -58,6 +58,31 @@ def make_tgt(data, vocab):
     return alignment
 
 
+def make_tgt_plan(data, vocab):
+    tgt_size = max([t.size(0) for t in data]) + 2  # add BOS and EOS
+    alignment = torch.zeros(tgt_size, len(data)).fill_(1).long()  # PAD index
+    for i, sent in enumerate(data):
+        alignment[0, i] = 2  # BOS
+        alignment[sent.size(0) + 1, i] = 3  # EOS
+        alignment[1:sent.size(0) + 1, i] = sent
+    return alignment
+
+
+def make_segment_lengths(data, vocab):
+    segment_lengths_size = max([t.size(0) for t in data])
+    segment_lengths = torch.zeros(segment_lengths_size, len(data)).long().fill_(-1)
+    for i, sent in enumerate(data):
+        segment_lengths[:sent.size(0), i] = sent
+    return segment_lengths
+
+
+def make_segment_count(data, vocab):
+    segment_count = torch.zeros(1, len(data)).long().fill_(-1)
+    for i, sent in enumerate(data):
+        segment_count[0][i] = data[i]
+    return segment_count
+
+
 def get_fields(
     src_data_type,
     n_src_feats,
@@ -119,6 +144,9 @@ def get_fields(
                         "base_name": "tgt"}
     fields["tgt"] = fields_getters["text"](**tgt_field_kwargs)
 
+    fields["tgt_plan"] = Field(
+        use_vocab=False, dtype=torch.long,
+        postprocessing=make_tgt_plan, sequential=False)
     indices = Field(use_vocab=False, dtype=torch.long, sequential=False)
     fields["indices"] = indices
 
@@ -136,6 +164,13 @@ def get_fields(
             postprocessing=make_tgt, sequential=False)
         fields["alignment"] = align
 
+    fields["segment_lengths"] = Field(
+        use_vocab=False, dtype=torch.long,
+        postprocessing=make_segment_lengths, sequential=False)
+
+    fields["segment_count"] = Field(
+        use_vocab=False, dtype=torch.long,
+        postprocessing=make_segment_count, sequential=False)
     return fields
 
 

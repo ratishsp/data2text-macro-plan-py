@@ -232,8 +232,8 @@ class NMTLossCompute(LossComputeBase):
 
     def _make_shard_state(self, batch, output, range_, attns=None):
         shard_state = {
-            "output": output,
-            "target": batch.tgt[range_[0] + 1: range_[1], :, 0],
+            "output": attns['std'],
+            "target": batch.tgt_plan.unsqueeze(2)[range_[0] + 1: range_[1], :, 0],
         }
         if self.lambda_coverage != 0.0:
             coverage = attns.get("coverage", None)
@@ -252,10 +252,7 @@ class NMTLossCompute(LossComputeBase):
 
     def _compute_loss(self, batch, output, target, std_attn=None,
                       coverage_attn=None):
-
-        bottled_output = self._bottle(output)
-
-        scores = self.generator(bottled_output)
+        scores = self._bottle(output)
         gtruth = target.view(-1)
 
         loss = self.criterion(scores, gtruth)

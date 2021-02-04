@@ -136,6 +136,8 @@ class Translator(object):
         self.model = model
         self.fields = fields
         tgt_field = dict(self.fields)["tgt"].base_field
+        src_field = dict(self.fields)["src"].base_field
+        self._src_pad_idx = src_field.vocab.stoi[src_field.pad_token]
         self._tgt_vocab = tgt_field.vocab
         self._tgt_eos_idx = self._tgt_vocab.stoi[tgt_field.eos_token]
         self._tgt_pad_idx = self._tgt_vocab.stoi[tgt_field.pad_token]
@@ -546,9 +548,11 @@ class Translator(object):
     def _run_encoder(self, batch):
         src, src_lengths = batch.src if isinstance(batch.src, tuple) \
                            else (batch.src, None)
+        segment_list_padded, segment_lengths_list = onmt.Trainer.process_src(batch, self._src_pad_idx)
 
-        enc_states, memory_bank, src_lengths = self.model.encoder(
-            src, src_lengths)
+        enc_states, memory_bank, src_lengths = self.model.encoder(segment_list_padded, segment_lengths_list,
+                                                                  batch.segment_count.squeeze(0),
+                                                                  padding_value=self._src_pad_idx)
         if src_lengths is None:
             assert not isinstance(memory_bank, tuple), \
                 'Ensemble decoding only supported for text data'
@@ -588,7 +592,7 @@ class Translator(object):
                 attn = dec_attn["std"]
             else:
                 attn = None
-            log_probs = self.model.generator(dec_out.squeeze(0))
+            log_probs = dec_attn["std"].squeeze(0)
             # returns [(batch_size x beam_size) , vocab ] when 1 step
             # or [ tgt_len, batch_size, vocab ] when full sentence
         else:

@@ -15,6 +15,7 @@ import traceback
 
 import onmt.utils
 from onmt.utils.logging import logger
+from torch.nn.utils.rnn import pad_sequence
 
 
 def build_trainer(opt, device_id, model, fields, optim, model_saver=None):
@@ -33,6 +34,8 @@ def build_trainer(opt, device_id, model, fields, optim, model_saver=None):
     """
 
     tgt_field = dict(fields)["tgt"].base_field
+    src_field = dict(fields)["src"].base_field
+    padding_idx = src_field.vocab.stoi[src_field.pad_token]
     train_loss = onmt.utils.loss.build_loss_compute(model, tgt_field, opt)
     valid_loss = onmt.utils.loss.build_loss_compute(
         model, tgt_field, opt, train=False)
@@ -70,7 +73,8 @@ def build_trainer(opt, device_id, model, fields, optim, model_saver=None):
                            model_dtype=opt.model_dtype,
                            earlystopper=earlystopper,
                            dropout=dropout,
-                           dropout_steps=dropout_steps)
+                           dropout_steps=dropout_steps,
+                           padding_idx=padding_idx)
     return trainer
 
 
@@ -107,7 +111,8 @@ class Trainer(object):
                  n_gpu=1, gpu_rank=1,
                  gpu_verbose_level=0, report_manager=None, model_saver=None,
                  average_decay=0, average_every=1, model_dtype='fp32',
-                 earlystopper=None, dropout=[0.3], dropout_steps=[0]):
+                 earlystopper=None, dropout=[0.3], dropout_steps=[0],
+                 padding_idx=None):
         # Basic attributes.
         self.model = model
         self.train_loss = train_loss
@@ -131,6 +136,7 @@ class Trainer(object):
         self.earlystopper = earlystopper
         self.dropout = dropout
         self.dropout_steps = dropout_steps
+        self.padding_idx = padding_idx
 
         for i in range(len(self.accum_count_l)):
             assert self.accum_count_l[i] > 0
@@ -307,10 +313,11 @@ class Trainer(object):
             for batch in valid_iter:
                 src, src_lengths = batch.src if isinstance(batch.src, tuple) \
                                    else (batch.src, None)
-                tgt = batch.tgt
-
+                tgt = batch.tgt_plan.unsqueeze(2)
+                segment_list_padded, segment_lengths_list = self.process_src(batch, self.padding_idx)
                 # F-prop through the model.
-                outputs, attns = valid_model(src, tgt, src_lengths)
+                outputs, attns = valid_model(segment_list_padded, segment_lengths_list, tgt,
+                                             batch.segment_count.squeeze(0), padding_value=self.padding_idx)
 
                 # Compute loss.
                 _, batch_stats = self.valid_loss(batch, outputs, attns)
@@ -332,7 +339,7 @@ class Trainer(object):
             self.optim.zero_grad()
 
         for k, batch in enumerate(true_batches):
-            target_size = batch.tgt.size(0)
+            target_size = batch.tgt_plan.size(0)
             # Truncated BPTT: reminder not compatible with accum > 1
             if self.trunc_size:
                 trunc_size = self.trunc_size
@@ -343,8 +350,9 @@ class Trainer(object):
                 else (batch.src, None)
             if src_lengths is not None:
                 report_stats.n_src_words += src_lengths.sum().item()
+            segment_list_padded, segment_lengths_list = self.process_src(batch, self.padding_idx)
 
-            tgt_outer = batch.tgt
+            tgt_outer = batch.tgt_plan.unsqueeze(2)
 
             bptt = False
             for j in range(0, target_size-1, trunc_size):
@@ -354,7 +362,8 @@ class Trainer(object):
                 # 2. F-prop all but generator.
                 if self.accum_count == 1:
                     self.optim.zero_grad()
-                outputs, attns = self.model(src, tgt, src_lengths, bptt=bptt)
+                outputs, attns = self.model(segment_list_padded, segment_lengths_list, tgt,
+                                            batch.segment_count.squeeze(0), padding_value=self.padding_idx, bptt=bptt)
                 bptt = True
 
                 # 3. Compute loss.
@@ -454,3 +463,25 @@ class Trainer(object):
             return self.report_manager.report_step(
                 learning_rate, step, train_stats=train_stats,
                 valid_stats=valid_stats)
+
+    @staticmethod
+    def process_src(batch, padding_idx):
+        src, lengths = batch.src
+        src_list = [src[:length, index, :] for index, length in enumerate(lengths)]
+        src_list = torch.cat(src_list, dim=0)
+        segment_lengths_list = Trainer.unpad(batch.segment_lengths, padding_idx=-1)
+        segment_list_padded = Trainer.split_into_segments(src_list, segment_lengths_list, padding_idx)
+        assert batch.segment_count.sum().item() == segment_list_padded.size(1)
+        return segment_list_padded, segment_lengths_list
+
+    @staticmethod
+    def split_into_segments(src_list, segment_lengths_list, padding_idx):
+        segment_list = src_list.split(segment_lengths_list.tolist())
+        segment_list_padded = pad_sequence(segment_list, padding_value=padding_idx)
+        return segment_list_padded
+
+    @staticmethod
+    def unpad(src, padding_idx):
+        src_list = src.transpose(0, 1).contiguous().view(-1)  # view as each table followed by other
+        src_list = src_list[src_list != padding_idx]  # exclude src padding tokens
+        return src_list

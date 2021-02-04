@@ -60,7 +60,7 @@ class RNNEncoder(EncoderBase):
             embeddings,
             opt.bridge)
 
-    def forward(self, src, lengths=None):
+    def forward(self, src, lengths=None, enforce_sorted=None):
         """See :func:`EncoderBase.forward()`"""
         self._check_args(src, lengths)
 
@@ -71,7 +71,7 @@ class RNNEncoder(EncoderBase):
         if lengths is not None and not self.no_pack_padded_seq:
             # Lengths data is wrapped inside a Tensor.
             lengths_list = lengths.view(-1).tolist()
-            packed_emb = pack(emb, lengths_list)
+            packed_emb = pack(emb, lengths_list, enforce_sorted=enforce_sorted)
 
         memory_bank, encoder_final = self.rnn(packed_emb)
 

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from onmt.models.stacked_rnn import StackedLSTM, StackedGRU
-from onmt.modules import context_gate_factory, GlobalAttention
+from onmt.modules import context_gate_factory, GlobalAttention, PointerAttention
 from onmt.utils.rnn_factory import rnn_factory
 
 from onmt.utils.misc import aeq
@@ -119,7 +119,7 @@ class RNNDecoderBase(DecoderBase):
                 raise ValueError("Cannot use coverage term with no attention.")
             self.attn = None
         else:
-            self.attn = GlobalAttention(
+            self.attn = PointerAttention(
                 hidden_size, coverage=coverage_attn,
                 attn_type=attn_type, attn_func=attn_func
             )
@@ -163,6 +163,7 @@ class RNNDecoderBase(DecoderBase):
             # The encoder hidden is  (layers*directions) x batch x dim.
             # We need to convert it to layers x batch x (directions*dim).
             if self.bidirectional_encoder:
+                assert False
                 hidden = torch.cat([hidden[0:hidden.size(0):2],
                                     hidden[1:hidden.size(0):2]], 2)
             return hidden
@@ -216,7 +217,7 @@ class RNNDecoderBase(DecoderBase):
         if not isinstance(dec_state, tuple):
             dec_state = (dec_state,)
         self.state["hidden"] = dec_state
-        self.state["input_feed"] = dec_outs[-1].unsqueeze(0)
+        #self.state["input_feed"] = dec_outs[-1].unsqueeze(0)
         self.state["coverage"] = None
         if "coverage" in attns:
             self.state["coverage"] = attns["coverage"][-1].unsqueeze(0)
@@ -437,3 +438,48 @@ class InputFeedRNNDecoder(RNNDecoderBase):
         self.dropout.p = dropout
         self.rnn.dropout.p = dropout
         self.embeddings.update_dropout(dropout)
+
+
+class PointerDecoder(RNNDecoderBase):
+    def _run_forward_pass(self, tgt, memory_bank, memory_lengths=None):
+        """
+                assert self.copy_attn is None  # TODO, no support yet.
+        assert not self._coverage  # TODO, no support yet.
+
+        attns = {}
+        """
+        assert self.copy_attn is None
+        assert not self._coverage
+
+        attns = {}
+        index_select = [torch.index_select(a, 0, i).unsqueeze(0) for a, i in
+                        zip(torch.transpose(memory_bank, 0, 1), torch.t(torch.squeeze(tgt, 2)))]
+        emb = torch.transpose(torch.cat(index_select), 0, 1)
+
+        if isinstance(self.rnn, nn.GRU):
+            rnn_output, dec_state = self.rnn(emb, self.state["hidden"][0])
+        else:
+            rnn_output, dec_state = self.rnn(emb, self.state["hidden"])
+
+        # Check
+        tgt_len, tgt_batch, _ = tgt.size()
+        output_len, output_batch, _ = rnn_output.size()
+        aeq(tgt_len, output_len)
+        aeq(tgt_batch, output_batch)
+
+        # Calculate the attention
+        p_attn = self.attn(
+            rnn_output.transpose(0, 1).contiguous(),
+            memory_bank.transpose(0, 1),
+            memory_lengths=memory_lengths
+        )
+        attns["std"] = p_attn
+        return dec_state, None, attns
+
+    def _build_rnn(self, rnn_type, **kwargs):
+        rnn, _ = rnn_factory(rnn_type, **kwargs)
+        return rnn
+
+    @property
+    def _input_size(self):
+        return self.hidden_size

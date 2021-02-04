@@ -69,15 +69,15 @@ def model_opts(parser):
               help='Data type of the model.')
 
     group.add('--encoder_type', '-encoder_type', type=str, default='rnn',
-              choices=['rnn', 'brnn', 'mean', 'transformer', 'cnn'],
+              choices=['rnn', 'brnn', 'mean', 'transformer', 'cnn', 'macroplan'],
               help="Type of encoder layer to use. Non-RNN layers "
                    "are experimental. Options are "
-                   "[rnn|brnn|mean|transformer|cnn].")
+                   "[rnn|brnn|mean|transformer|cnn|macroplan].")
     group.add('--decoder_type', '-decoder_type', type=str, default='rnn',
-              choices=['rnn', 'transformer', 'cnn'],
+              choices=['rnn', 'transformer', 'cnn', 'pointer'],
               help="Type of decoder layer to use. Non-RNN layers "
                    "are experimental. Options are "
-                   "[rnn|transformer|cnn].")
+                   "[rnn|transformer|cnn|pointer].")
 
     group.add('--layers', '-layers', type=int, default=-1,
               help='Number of layers in enc/dec.')
@@ -127,6 +127,9 @@ def model_opts(parser):
               choices=['source', 'target', 'both'],
               help="Type of context gate to use. "
                    "Do not select for no context gate.")
+
+    group.add('--content_selection_attn_hidden', '-content_selection_attn_hidden', type=int, default=-1,
+              help="Size of attn hidden for content selection")
 
     # Attention options
     group = parser.add_argument_group('Model- Attention')

@@ -21,6 +21,40 @@ def _join_dicts(*args):
     return dict(chain(*[d.items() for d in args]))
 
 
+def _add_tgt_plan(example, tgt_field, tgt_field_attrib_name):
+    """
+    Add field for int version of tgt_plan
+    :param example:
+    :param tgt_field:
+    :param tgt_field_attrib_name:
+    :return:
+    """
+    tgt_plan = tgt_field.tokenize(example["tgt"])
+    example[tgt_field_attrib_name] = torch.LongTensor([int(w) for w in tgt_plan])
+
+
+def _add_segment_details(example, src_field, src_field_attrib_name, length_attrib, count_attrib):
+  """
+  Creates fields for total number of records for each segment and total number of segment
+
+  :param example:
+  :param src_field:
+  :param src_field_attrib_name:
+  :param length_attrib:
+  :param count_attrib:
+  :return:
+  """
+  src = src_field.tokenize(example[src_field_attrib_name])
+  indices = [index for index, x in enumerate(src) if x == "<segment>"]
+  segment_lengths = [1, 1, 1, 1]  # UNK, PAD, BOS, EOS
+  segment_lengths = segment_lengths + [t - s for s, t in zip(indices, indices[1:])]
+  segment_lengths = segment_lengths + [(len(src) - indices[-1])]
+  example[length_attrib] = torch.LongTensor(segment_lengths)
+  example[count_attrib] = torch.LongTensor([len(segment_lengths)])
+  assert len(segment_lengths) == len(indices) + 4  # +4 for UNK, PAD, BOS, EOS
+  assert sum(segment_lengths) == len(src)
+
+
 def _dynamic_dict(example, src_field, tgt_field):
     """Create copy-vocab and numericalize with it.
 
@@ -126,6 +160,9 @@ class Dataset(TorchtextDataset):
                 src_ex_vocab, ex_dict = _dynamic_dict(
                     ex_dict, src_field.base_field, tgt_field.base_field)
                 self.src_vocabs.append(src_ex_vocab)
+            if "tgt" in ex_dict:
+                _add_tgt_plan(ex_dict, fields['tgt'].base_field, "tgt_plan")
+            _add_segment_details(ex_dict, fields['src'].base_field, "src", "segment_lengths", "segment_count")
             ex_fields = {k: [(k, v)] for k, v in fields.items() if
                          k in ex_dict}
             ex = Example.fromdict(ex_dict, ex_fields)
