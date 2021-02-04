@@ -661,6 +661,9 @@ def translate_opts(parser):
                    "(higher = longer generation)")
     group.add('--beta', '-beta', type=float, default=-0.,
               help="Coverage penalty parameter")
+    group.add('--block_repetitions', '-block_repetitions',
+              type=int, default=100000,
+              help='Block repetition of unigram during decoding')
     group.add('--block_ngram_repeat', '-block_ngram_repeat',
               type=int, default=0,
               help='Block repetition of ngrams during decoding.')

@@ -119,6 +119,7 @@ class Translator(object):
             stepwise_penalty=None,
             dump_beam=False,
             block_ngram_repeat=0,
+            block_repetitions=100000,
             ignore_when_blocking=frozenset(),
             replace_unk=False,
             phrase_table="",
@@ -162,6 +163,7 @@ class Translator(object):
         self.stepwise_penalty = stepwise_penalty
         self.dump_beam = dump_beam
         self.block_ngram_repeat = block_ngram_repeat
+        self.block_repetitions = block_repetitions
         self.ignore_when_blocking = ignore_when_blocking
         self._exclusion_idxs = {
             self._tgt_vocab.stoi[t] for t in self.ignore_when_blocking}
@@ -250,6 +252,7 @@ class Translator(object):
             stepwise_penalty=opt.stepwise_penalty,
             dump_beam=opt.dump_beam,
             block_ngram_repeat=opt.block_ngram_repeat,
+            block_repetitions=opt.block_repetitions,
             ignore_when_blocking=set(opt.ignore_when_blocking),
             replace_unk=opt.replace_unk,
             phrase_table=opt.phrase_table,
@@ -681,7 +684,8 @@ class Translator(object):
             stepwise_penalty=self.stepwise_penalty,
             block_ngram_repeat=self.block_ngram_repeat,
             exclusion_tokens=self._exclusion_idxs,
-            memory_lengths=memory_lengths)
+            memory_lengths=memory_lengths,
+            block_repetitions=self.block_repetitions)
 
         for step in range(max_length):
             decoder_input = beam.current_predictions.view(1, -1, 1)

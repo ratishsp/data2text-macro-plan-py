@@ -56,11 +56,11 @@ class BeamSearch(DecodeStrategy):
     def __init__(self, beam_size, batch_size, pad, bos, eos, n_best, mb_device,
                  global_scorer, min_length, max_length, return_attention,
                  block_ngram_repeat, exclusion_tokens, memory_lengths,
-                 stepwise_penalty, ratio):
+                 stepwise_penalty, ratio, block_repetitions):
         super(BeamSearch, self).__init__(
             pad, bos, eos, batch_size, mb_device, beam_size, min_length,
             block_ngram_repeat, exclusion_tokens, return_attention,
-            max_length)
+            max_length, block_repetitions)
         # beam parameters
         self.global_scorer = global_scorer
         self.beam_size = beam_size

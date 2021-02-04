@@ -1,4 +1,5 @@
 import torch
+from collections import Counter
 
 
 class DecodeStrategy(object):
@@ -56,7 +57,7 @@ class DecodeStrategy(object):
 
     def __init__(self, pad, bos, eos, batch_size, device, parallel_paths,
                  min_length, block_ngram_repeat, exclusion_tokens,
-                 return_attention, max_length):
+                 return_attention, max_length, block_repetitions):
 
         # magic indices
         self.pad = pad
@@ -79,6 +80,7 @@ class DecodeStrategy(object):
         self.min_length = min_length
         self.max_length = max_length
         self.block_ngram_repeat = block_ngram_repeat
+        self.block_repetitions = block_repetitions
         self.exclusion_tokens = exclusion_tokens
         self.return_attention = return_attention
 
@@ -115,6 +117,9 @@ class DecodeStrategy(object):
                     if tuple(gram) in ngrams:
                         fail = True
                     ngrams.add(tuple(gram))
+                # check hypothesis contains greater than or equal to block_repetitions instances of any pp; discontinue
+                if Counter(hyp.tolist()).most_common(1)[0][1] >= self.block_repetitions:
+                    fail = True
                 if fail:
                     log_probs[path_idx] = -10e20
 
