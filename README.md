@@ -9,4 +9,6 @@ All dependencies can be installed via:
 pip install -r requirements.txt
 ```
 
+## Code Details
+The `main` branch contains code to generate macro plans from input verbalization. The code for training summary generation is coming soon, along with the scripts to create the data.
 
