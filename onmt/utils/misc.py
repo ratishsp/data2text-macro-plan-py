@@ -4,6 +4,28 @@ import torch
 import random
 import inspect
 from itertools import islice
+import collections
+
+
+def split_corpus_by_tgt_length(src_path, tgt_path):
+    src_shards = collections.defaultdict(list)
+    tgt_shards = collections.defaultdict(list)
+
+    with open(tgt_path, "rb") as f:
+        tgt_lines = f.readlines()
+    with open(src_path, "rb") as f:
+        src_lines = f.readlines()
+    for src_line, tgt_line in zip(src_lines, tgt_lines):
+        words = tgt_line.split()
+        src_shards[(len(words)+2)//100].append(src_line)  # +2 to handle bos, eos
+        tgt_shards[(len(words)+2)//100].append(tgt_line)
+    src_shards_list = []
+    tgt_shards_list = []
+    sorted_keys = sorted(src_shards, key=lambda x: int(x))
+    for key in sorted_keys:
+        src_shards_list.append(src_shards[key])
+        tgt_shards_list.append(tgt_shards[key])
+    return src_shards_list, tgt_shards_list
 
 
 def split_corpus(path, shard_size):
