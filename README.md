@@ -12,7 +12,7 @@ pip install -r requirements.txt
 ## Code Details
 The `main` branch contains code to generate macro plans from input verbalization. The code for training summary generation is in `summary_gen` branch.
 
-The trained models can be downloaded from the google drive link https://drive.google.com/drive/folders/1jJjq5IvuBKNLTAe7fuwlDYParrxpK-WD?usp=sharing
+The test outputs and trained models can be downloaded from the google drive link https://drive.google.com/drive/folders/1jJjq5IvuBKNLTAe7fuwlDYParrxpK-WD?usp=sharing
 
 
 
