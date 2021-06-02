@@ -31,6 +31,8 @@ git checkout main
 python create_roto_target_data.py -json_root ${JSON_ROOT} \
 -output_folder ${OUTPUT_FOLDER} -dataset_type ${DATASET_TYPE}
 ```
+The files so created can also be downloaded from https://drive.google.com/drive/folders/1b_BK6lfNuBf89GmUDtSu_8Mw_kP9t09z?usp=sharing
+
 3: Run bpe tokenization
 ```
 BASE=~/macro_plan_data
