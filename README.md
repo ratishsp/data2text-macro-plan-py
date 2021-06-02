@@ -145,17 +145,17 @@ mkdir $BASE/rotowire-tokenized
 cat $TRAIN_FILE_1 $TRAIN_FILE_2 > $COMBINED
 python learn_bpe.py -s 6000 < $COMBINED > $CODE 
 
-TRAIN_BPE_FILE_1=$ROOT/rotowire-tokenized/train.bpe.te
-TRAIN_BPE_FILE_2=$ROOT/rotowire-tokenized/train.bpe.su
+TRAIN_BPE_FILE_1=$BASE/rotowire-tokenized/train.bpe.te
+TRAIN_BPE_FILE_2=$BASE/rotowire-tokenized/train.bpe.su
 
 python apply_bpe.py -c $CODE --vocabulary-threshold 10 --glossaries "<segment[0-30]>"  < $TRAIN_FILE_1 > $TRAIN_BPE_FILE_1
 python apply_bpe.py -c $CODE --vocabulary-threshold 10 --glossaries "<segment[0-30]>"  < $TRAIN_FILE_2 > $TRAIN_BPE_FILE_2
 
 
-VALID_FILE_1=$ROOT/rotowire/valid.te
-VALID_FILE_2=$ROOT/rotowire/valid.su
-VALID_BPE_FILE_1=$ROOT/rotowire-tokenized/valid.bpe.te
-VALID_BPE_FILE_2=$ROOT/rotowire-tokenized/valid.bpe.su
+VALID_FILE_1=$BASE/rotowire/valid.te
+VALID_FILE_2=$BASE/rotowire/valid.su
+VALID_BPE_FILE_1=$BASE/rotowire-tokenized/valid.bpe.te
+VALID_BPE_FILE_2=$BASE/rotowire-tokenized/valid.bpe.su
 python apply_bpe.py -c $CODE --vocabulary-threshold 10 --glossaries "<segment[0-30]>"  < $VALID_FILE_1 > $VALID_BPE_FILE_1
 python apply_bpe.py -c $CODE --vocabulary-threshold 10 --glossaries "<segment[0-30]>"  < $VALID_FILE_2 > $VALID_BPE_FILE_2
 ```
