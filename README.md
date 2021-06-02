@@ -104,8 +104,9 @@ python create_macro_plan_from_index.py -src_file ${SRC_FILE} \
 
 9. Run script to create paragraph plans conformant for generation
 ```
+OUTPUT_FOLDER=${BASE}/rotowire/
 python construct_inference_roto_plan.py -json_root ${JSON_ROOT} \  
--output_folder ${OUTPUT_FILE} -dataset_type ${DATASET_TYPE} -suffix stage2
+-output_folder ${OUTPUT_FOLDER} -dataset_type ${DATASET_TYPE} -suffix stage2
 ``` 
 Note: here we omit the ```for_macroplanning``` flag
 
@@ -113,8 +114,8 @@ Note: here we omit the ```for_macroplanning``` flag
 ```
 SRC_FILE_NAME=valid.stage2.pp
 SRC_FILE=${BASE}/rotowire/${SRC_FILE_NAME}
-python create_macro_plan_from_index.py -src_file ${SRC_FILE} \  
--macro_plan_indices $BASE/gen/roto_$IDENTIFIER-beam5_gens.txt \  
+python create_macro_plan_from_index.py -src_file ${SRC_FILE} \
+-macro_plan_indices $BASE/gen/roto_$IDENTIFIER-beam5_gens.txt \
 -output_file $BASE/gen/roto_$IDENTIFIER-plan-summary-beam5_gens.txt
 ```
 11. Add segment indices to macro plan
@@ -128,7 +129,8 @@ python convert_roto_plan.py -roto_plan ${BASE_ROTO_PLAN} \
 ```
 JSON_ROOT=<Folder containing retokenized json files>
 DATASET_TYPE=train/valid/test
-python create_roto_target_data_gen.py -json_root ${JSON_ROOT} \  
+OUTPUT_FOLDER=~/docgen/rotowire
+python create_roto_target_data_gen.py -json_root ${JSON_ROOT} \
 -output_folder ${OUTPUT_FOLDER} -dataset_type ${DATASET_TYPE}
 ```
 13. Run bpe tokenization
