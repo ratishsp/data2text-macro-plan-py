@@ -72,6 +72,17 @@ python construct_inference_roto_plan.py -json_root ${JSON_ROOT} \
 -output_folder ${OUTPUT_FOLDER} -dataset_type ${DATASET_TYPE} -for_macroplanning \
 -suffix infer
 ```
+
+Apply bpe
+```
+PRED=infer
+CODE=$BASE/rotowire-tokenized/code
+VALID_FILE_1=$BASE/rotowire/valid.${PRED}.pp
+VALID_BPE_FILE_1=$BASE/rotowire-tokenized/valid.bpe.${PRED}.pp
+
+python apply_bpe.py -c $CODE --glossaries "WON-[0-9]+" "LOST-[0-9]+" --vocabulary-threshold 10 <$VALID_FILE_1 >$VALID_BPE_FILE_1
+```
+
 7. Run inference for macro planning
 ```
 FILENAME=valid.bpe.infer.pp
