@@ -180,7 +180,7 @@ python train.py -data $BASE/preprocess/roto -save_model $BASE/gen_model/$IDENTIF
 ```
 BASE=~/docgen
 BASE_OUTPUT_FILE=~/docgen/rotowire/roto_${IDENTIFIER}-plan-beam5_gens.te
-CODE=$BASE/rotowire-tokenized/code  # This BPE code is obtained in Step 14 below
+CODE=$BASE/rotowire-tokenized/code
 VALID_FILE_1=${BASE_OUTPUT_FILE}  
 VALID_BPE_FILE_1=$BASE/rotowire-tokenized/roto_${IDENTIFIER}-plan.bpe-beam5_gens.te    
 python apply_bpe.py -c $CODE --vocabulary-threshold 10 <$VALID_FILE_1 >$VALID_BPE_FILE_1
@@ -190,8 +190,8 @@ python apply_bpe.py -c $CODE --vocabulary-threshold 10 <$VALID_FILE_1 >$VALID_BP
 ```
 MODEL_PATH=~/docgen/gen_model/$IDENTIFIER/roto_step_15200.pt
 FILENAME=roto_${IDENTIFIER}-plan.bpe-beam5_gens.te
-python translate.py -model $MODEL_PATH -src $BASE/rotowire-tokenized/${FILENAME} \  
--output $BASE/gen/roto_$IDENTIFIER-bpe_beam5_gens.txt -batch_size 10 -max_length 850 -gpu ${GPUID} \  
+python translate.py -model $MODEL_PATH -src $BASE/rotowire-tokenized/${FILENAME} \
+-output $BASE/gen/roto_$IDENTIFIER-bpe_beam5_gens.txt -batch_size 10 -max_length 850 -gpu ${GPUID} \
 -min_length 150 -beam_size 5
 ```
 18. Strip the ```@@@``` characters
