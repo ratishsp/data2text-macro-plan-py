@@ -86,6 +86,7 @@ python apply_bpe.py -c $CODE --glossaries "WON-[0-9]+" "LOST-[0-9]+" --vocabular
 7. Run inference for macro planning
 ```
 FILENAME=valid.bpe.infer.pp
+mkdir $BASE/gen
 python translate.py -model $MODEL_PATH -src $BASE/rotowire-tokenized/${FILENAME} \
 -output $BASE/gen/roto_$IDENTIFIER-beam5_gens.txt -batch_size 10 -max_length 20 -gpu ${GPUID} \
 -min_length 8 -beam_size 5 \
@@ -94,10 +95,10 @@ python translate.py -model $MODEL_PATH -src $BASE/rotowire-tokenized/${FILENAME}
 
 8. Generate the macro plan from indices
 ```
-SRC_FILE_NAME=valid.pp
+SRC_FILE_NAME=valid.infer.pp
 SRC_FILE=${BASE}/rotowire/${SRC_FILE_NAME}
-python create_macro_plan_from_index.py -src_file ${SRC_FILE} \  
--macro_plan_indices $BASE/gen/roto_$IDENTIFIER-beam5_gens.txt \  
+python create_macro_plan_from_index.py -src_file ${SRC_FILE} \
+-macro_plan_indices $BASE/gen/roto_$IDENTIFIER-beam5_gens.txt \
 -output_file $BASE/gen/roto_$IDENTIFIER-plan-beam5_gens.txt
 ```
 
