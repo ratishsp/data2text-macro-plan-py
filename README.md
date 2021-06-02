@@ -67,14 +67,17 @@ python train.py -data $BASE/preprocess/roto -save_model $BASE/gen_model/$IDENTIF
 ```
 6. Construct inference time plan input
 ```
-python construct_inference_roto_plan.py -json_root ${JSON_ROOT} \  
--output_folder ${OUTPUT_FILE} -dataset_type ${DATASET_TYPE} -for_macroplanning
+OUTPUT_FOLDER=$BASE/rotowire/
+python construct_inference_roto_plan.py -json_root ${JSON_ROOT} \
+-output_folder ${OUTPUT_FOLDER} -dataset_type ${DATASET_TYPE} -for_macroplanning \
+-suffix infer
 ```
 7. Run inference for macro planning
 ```
-python translate.py -model $MODEL_PATH -src $BASE/rotowire-tokenized/${FILENAME} \  
--output $BASE/gen/roto_$IDENTIFIER-beam5_gens.txt -batch_size 10 -max_length 20 -gpu ${GPUID} \  
--min_length 8 -beam_size 5 \  
+FILENAME=valid.bpe.infer.pp
+python translate.py -model $MODEL_PATH -src $BASE/rotowire-tokenized/${FILENAME} \
+-output $BASE/gen/roto_$IDENTIFIER-beam5_gens.txt -batch_size 10 -max_length 20 -gpu ${GPUID} \
+-min_length 8 -beam_size 5 \
 -length_penalty avg -block_ngram_repeat 2
 ```
 
