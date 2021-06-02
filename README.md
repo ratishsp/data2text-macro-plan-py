@@ -33,6 +33,7 @@ python create_roto_target_data.py -json_root ${JSON_ROOT} \
 ```
 3: Run bpe tokenization
 ```
+BASE=~/macro_plan_data
 TRAIN_FILE_1=$BASE/rotowire/train.pp  
 CODE=$BASE/rotowire-tokenized/code  
 MERGES=2500
@@ -50,6 +51,7 @@ python apply_bpe.py -c $CODE --glossaries "WON-[0-9]+" "LOST-[0-9]+" --vocabular
 ```
 4. Preprocess the data
 ```
+BASE=~/macro_plan_data
 git checkout main
 python preprocess.py -train_src $BASE/rotowire-tokenized/train.bpe.pp -train_tgt \
 $BASE/rotowire/train.macroplan -valid_src $BASE/rotowire-tokenized/valid.bpe.pp \
@@ -60,6 +62,7 @@ $BASE/rotowire/train.macroplan -valid_src $BASE/rotowire-tokenized/valid.bpe.pp 
 5. Train the model
 ```
 git checkout main
+BASE=~/macro_plan_data
 python train.py -data $BASE/preprocess/roto -save_model $BASE/gen_model/$IDENTIFIER/rotowire -encoder_type macroplan -layers 1 \
 -decoder_type pointer \
 -word_vec_size 384 -rnn_size 384 -seed 1234 -optim adagrad -learning_rate 0.15 -adagrad_accumulator_init 0.1 \
@@ -71,6 +74,7 @@ python train.py -data $BASE/preprocess/roto -save_model $BASE/gen_model/$IDENTIF
 ```
 6. Construct inference time plan input
 ```
+BASE=~/macro_plan_data
 OUTPUT_FOLDER=$BASE/rotowire/
 git checkout main
 python construct_inference_roto_plan.py -json_root ${JSON_ROOT} \
@@ -80,6 +84,7 @@ python construct_inference_roto_plan.py -json_root ${JSON_ROOT} \
 
 Apply bpe
 ```
+BASE=~/macro_plan_data
 PRED=infer
 CODE=$BASE/rotowire-tokenized/code
 VALID_FILE_1=$BASE/rotowire/valid.${PRED}.pp
@@ -90,6 +95,7 @@ python apply_bpe.py -c $CODE --glossaries "WON-[0-9]+" "LOST-[0-9]+" --vocabular
 
 7. Run inference for macro planning
 ```
+BASE=~/macro_plan_data
 FILENAME=valid.bpe.infer.pp
 mkdir $BASE/gen
 git checkout main
@@ -98,19 +104,11 @@ python translate.py -model $MODEL_PATH -src $BASE/rotowire-tokenized/${FILENAME}
 -min_length 8 -beam_size 5 \
 -length_penalty avg -block_ngram_repeat 2
 ```
-
-8. Generate the macro plan from indices
-```
-SRC_FILE_NAME=valid.infer.pp
-SRC_FILE=${BASE}/rotowire/${SRC_FILE_NAME}
-git checkout main
-python create_macro_plan_from_index.py -src_file ${SRC_FILE} \
--macro_plan_indices $BASE/gen/roto_$IDENTIFIER-beam5_gens.txt \
--output_file $BASE/gen/roto_$IDENTIFIER-plan-beam5_gens.txt
-```
+8. Continue to step 9
 
 9. Run script to create paragraph plans conformant for generation
 ```
+BASE=~/macro_plan_data
 OUTPUT_FOLDER=${BASE}/rotowire/
 git checkout main
 python construct_inference_roto_plan.py -json_root ${JSON_ROOT} \  
@@ -120,6 +118,7 @@ Note: here we omit the ```for_macroplanning``` flag
 
 10. Create the macro plan conformant for generation
 ```
+BASE=~/macro_plan_data
 SRC_FILE_NAME=valid.stage2.pp
 SRC_FILE=${BASE}/rotowire/${SRC_FILE_NAME}
 git checkout main
@@ -129,6 +128,7 @@ python create_macro_plan_from_index.py -src_file ${SRC_FILE} \
 ```
 11. Add segment indices to macro plan
 ```
+BASE=~/macro_plan_data
 BASE_ROTO_PLAN=$BASE/gen/roto_$IDENTIFIER-plan-summary-beam5_gens.txt
 BASE_OUTPUT_FILE=~/docgen/rotowire/roto_${IDENTIFIER}-plan-beam5_gens.te
 git checkout main
@@ -181,6 +181,7 @@ python preprocess.py -train_src $BASE/rotowire-tokenized/train.bpe.te -train_tgt
 15. Train summary-gen model
 ```
 git checkout summary_gen
+BASE=~/docgen
 python train.py -data $BASE/preprocess/roto -save_model $BASE/gen_model/$IDENTIFIER/roto -encoder_type brnn -layers 1 \
 -word_vec_size 300 -rnn_size 600 -seed 1234 -optim adagrad -learning_rate 0.15 -adagrad_accumulator_init 0.1 \
 -report_every 10 \
@@ -200,6 +201,7 @@ python apply_bpe.py -c $CODE --vocabulary-threshold 10 <$VALID_FILE_1 >$VALID_BP
 
 17. Run inference for the summary gen model
 ```
+BASE=~/docgen
 MODEL_PATH=~/docgen/gen_model/$IDENTIFIER/roto_step_15200.pt
 FILENAME=roto_${IDENTIFIER}-plan.bpe-beam5_gens.te
 git checkout summary_gen
