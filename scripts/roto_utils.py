@@ -217,13 +217,13 @@ def get_all_paragraph_plans(entry, for_macroplanning=True):
     descs = [""]  # empty segment
     desc = []
     if home_won:
-        home_line = get_team_line(entry["home_line"], "won", "home")
-        vis_line = get_team_line(entry["vis_line"], "lost", "vis")
+        home_line = get_team_line(entry["home_line"], "won", "home", for_macroplanning=for_macroplanning)
+        vis_line = get_team_line(entry["vis_line"], "lost", "vis", for_macroplanning=for_macroplanning)
         desc.append(home_line)
         desc.append(vis_line)
     else:
-        vis_line = get_team_line(entry["vis_line"], "won", "vis")
-        home_line = get_team_line(entry["home_line"], "lost", "home")
+        vis_line = get_team_line(entry["vis_line"], "won", "vis", for_macroplanning=for_macroplanning)
+        home_line = get_team_line(entry["home_line"], "lost", "home", for_macroplanning=for_macroplanning)
         desc.append(vis_line)
         desc.append(home_line)
     descs.append(" ".join(desc))  # include line discussing both teams
