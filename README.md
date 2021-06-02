@@ -222,19 +222,26 @@ perl ~/mosesdecoder/scripts/generic/multi-bleu.perl  ${REFERENCE}\
 ```
 
 20. Preprocessing for IE
+In this paper, we make use of IE including duplicate records too. 
+The branch ```include_all_records``` of https://github.com/ratishsp/data2text-1 
+contains the relevant code changes. 
 ```
+IE_ROOT=~/ie_root
+git checkout include_all_records
 python data_utils.py -mode prep_gen_data -gen_fi $BASE/gen/roto_$IDENTIFIER-beam5_gens.txt \  
 -dict_pfx "$IE_ROOT/data/roto-ie" -output_fi $BASE/transform_gen/roto_$IDENTIFIER-beam5_gens.h5 \  
 -input_path "$IE_ROOT/json"
 ```
 21. Run RG evaluation
 ```
+IE_ROOT=~/ie_root
+git checkout include_all_records
 th extractor.lua -gpuid  0 -datafile $IE_ROOT/data/roto-ie.h5 \  
--preddata $BASE/transform_gen/roto_$IDENTIFIER-beam5_gens.h5 -dict_pfx "$IE_ROOT/data/roto-ie" -just_eval \  
--folder_root $FOLDER_ROOT
+-preddata $BASE/transform_gen/roto_$IDENTIFIER-beam5_gens.h5 -dict_pfx "$IE_ROOT/data/roto-ie" -just_eval  
 ```
 22. Run evaluation for non rg metrics 
 ```
+git checkout include_all_records
 python non_rg_metrics.py $BASE/transform_gen/roto_val-beam5_gens.h5-tuples.txt \  
 $BASE/transform_gen/roto_$IDENTIFIER-beam5_gens.h5-tuples.txt
 ```
