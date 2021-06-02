@@ -169,11 +169,11 @@ python preprocess.py -train_src $BASE/rotowire-tokenized/train.bpe.te -train_tgt
 
 15. Train summary-gen model
 ```
-python train.py -data $BASE/preprocess/roto -save_model $BASE/gen_model/$IDENTIFIER/roto -encoder_type brnn -layers 1 \  
--word_vec_size 300 -rnn_size 600 -seed 1234 -optim adagrad -learning_rate 0.15 -adagrad_accumulator_init 0.1 \  
--report_every 10 \  
--batch_size 5 -valid_batch_size 5 -truncated_decoder 100 -copy_attn -reuse_copy_attn -train_steps 30000 \  
--valid_steps 400 -save_checkpoint_steps 400 -start_decay_steps 2720 -decay_steps 680 --early_stopping 10 \  
+python train.py -data $BASE/preprocess/roto -save_model $BASE/gen_model/$IDENTIFIER/roto -encoder_type brnn -layers 1 \
+-word_vec_size 300 -rnn_size 600 -seed 1234 -optim adagrad -learning_rate 0.15 -adagrad_accumulator_init 0.1 \
+-report_every 10 \
+-batch_size 5 -valid_batch_size 5 -truncated_decoder 100 -copy_attn -reuse_copy_attn -train_steps 30000 \
+-valid_steps 400 -save_checkpoint_steps 400 -start_decay_steps 2720 -decay_steps 680 --early_stopping 10 \
 --early_stopping_criteria accuracy -world_size 1 -gpu_ranks 0 --keep_checkpoint 15 --learning_rate_decay 0.97
 ```
 16. Apply bpe to plan obtained in Step 11
