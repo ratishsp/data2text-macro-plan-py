@@ -1,7 +1,7 @@
 import os
 import json
 import argparse
-from scripts.tokenizer import detokenize, word_tokenize
+from tokenizer import detokenize, word_tokenize
 
 
 def process(input_folder, type, output_folder):

@@ -1,7 +1,7 @@
 import os
 import json
-from scripts.roto_utils import get_ents, get_players, extract_entities, get_player_line, get_team_line, sort_points
-from scripts.tokenizer import sent_tokenize
+from roto_utils import get_ents, get_players, extract_entities, get_player_line, get_team_line, sort_points
+from tokenizer import sent_tokenize
 import logging
 import numpy as np
 from collections import OrderedDict

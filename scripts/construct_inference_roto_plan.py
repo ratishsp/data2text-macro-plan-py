@@ -1,7 +1,7 @@
 import os
 import json
 from collections import OrderedDict
-from scripts.roto_utils import get_all_paragraph_plans
+from roto_utils import get_all_paragraph_plans
 import argparse
 
 
