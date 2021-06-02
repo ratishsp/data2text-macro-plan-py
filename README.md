@@ -198,7 +198,7 @@ VALID_BPE_FILE_1=$BASE/rotowire-tokenized/roto_${IDENTIFIER}-plan.bpe-beam5_gens
 python apply_bpe.py -c $CODE --vocabulary-threshold 10 <$VALID_FILE_1 >$VALID_BPE_FILE_1
 ```
 
-17. Run inference for the macro plan
+17. Run inference for the summary gen model
 ```
 MODEL_PATH=~/docgen/gen_model/$IDENTIFIER/roto_step_15200.pt
 FILENAME=roto_${IDENTIFIER}-plan.bpe-beam5_gens.te
