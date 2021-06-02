@@ -169,6 +169,7 @@ python preprocess.py -train_src $BASE/rotowire-tokenized/train.bpe.te -train_tgt
 
 15. Train summary-gen model
 ```
+git checkout summary_gen
 python train.py -data $BASE/preprocess/roto -save_model $BASE/gen_model/$IDENTIFIER/roto -encoder_type brnn -layers 1 \
 -word_vec_size 300 -rnn_size 600 -seed 1234 -optim adagrad -learning_rate 0.15 -adagrad_accumulator_init 0.1 \
 -report_every 10 \
@@ -190,6 +191,7 @@ python apply_bpe.py -c $CODE --vocabulary-threshold 10 <$VALID_FILE_1 >$VALID_BP
 ```
 MODEL_PATH=~/docgen/gen_model/$IDENTIFIER/roto_step_15200.pt
 FILENAME=roto_${IDENTIFIER}-plan.bpe-beam5_gens.te
+git checkout summary_gen
 python translate.py -model $MODEL_PATH -src $BASE/rotowire-tokenized/${FILENAME} \
 -output $BASE/gen/roto_$IDENTIFIER-bpe_beam5_gens.txt -batch_size 10 -max_length 850 -gpu ${GPUID} \
 -min_length 150 -beam_size 5
