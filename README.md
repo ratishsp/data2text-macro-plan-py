@@ -26,7 +26,7 @@ The retokenized json files can also be downloaded from https://drive.google.com/
 ```
 JSON_ROOT=<Folder containing retokenized json files>
 DATASET_TYPE=train/valid/test
-python create_roto_target_data.py -json_root ${JSON_ROOT} \  
+python create_roto_target_data.py -json_root ${JSON_ROOT} \
 -output_folder ${OUTPUT_FOLDER} -dataset_type ${DATASET_TYPE}
 ```
 3: Run bpe tokenization
@@ -48,21 +48,21 @@ python apply_bpe.py -c $CODE --glossaries "WON-[0-9]+" "LOST-[0-9]+" --vocabular
 ```
 4. Preprocess the data
 ```
-python preprocess.py -train_src $BASE/rotowire-tokenized/train.bpe.pp -train_tgt \  
-$BASE/rotowire/train.macroplan -valid_src $BASE/rotowire-tokenized/valid.bpe.pp \  
--valid_tgt $BASE/rotowire/valid.macroplan -save_data $BASE/${PREPROCESS}/roto \  
+python preprocess.py -train_src $BASE/rotowire-tokenized/train.bpe.pp -train_tgt \
+$BASE/rotowire/train.macroplan -valid_src $BASE/rotowire-tokenized/valid.bpe.pp \
+-valid_tgt $BASE/rotowire/valid.macroplan -save_data $BASE/preprocess/roto \
 -src_seq_length 1000000 -tgt_seq_length 1000000 -shard_size 10000
 ```
 
 5. Train the model
 ```
-python train.py -data $BASE/preprocess/roto -save_model $BASE/gen_model/$IDENTIFIER/rotowire -encoder_type macroplan -layers 1 \  
--decoder_type pointer \  
--word_vec_size 384 -rnn_size 384 -seed 1234 -optim adagrad -learning_rate 0.15 -adagrad_accumulator_init 0.1 \  
--content_selection_attn_hidden 64 \  
--report_every 10 \  
--batch_size 5 -valid_batch_size 5 -train_steps 30000 \  
--valid_steps 300 -save_checkpoint_steps 300 -start_decay_steps 30000 -decay_steps 30000 --early_stopping 10 \  
+python train.py -data $BASE/preprocess/roto -save_model $BASE/gen_model/$IDENTIFIER/rotowire -encoder_type macroplan -layers 1 \
+-decoder_type pointer \
+-word_vec_size 384 -rnn_size 384 -seed 1234 -optim adagrad -learning_rate 0.15 -adagrad_accumulator_init 0.1 \
+-content_selection_attn_hidden 64 \
+-report_every 10 \
+-batch_size 5 -valid_batch_size 5 -train_steps 30000 \
+-valid_steps 300 -save_checkpoint_steps 300 -start_decay_steps 30000 -decay_steps 30000 --early_stopping 10 \
 --early_stopping_criteria accuracy -world_size 1 -gpu_ranks 0 --keep_checkpoint 15
 ```
 6. Construct inference time plan input
