@@ -5,7 +5,7 @@ This repo is organized in two branches:
 - `main`: macro-planning training and inference
 - `summary_gen`: text generation training and inference
 
-To leverage these two branches the best as possible, clone this repo twice, and
+To leverage these two branches as best as possible, clone this repo twice, and
 name the copies `macro_plan` and `doc_gen`. Then, set env. variables to the
 corresponding path:
 
@@ -24,6 +24,9 @@ cd $DOC_GEN
 git checkout summary_gen
 ```
 
+Note that sections I and III are for training, and sections II and IV are for inference.  
+As such, you can pretty much run sections I and III in parallel if you wish (just run I.1 first).
+
 ### Download the RotoWire data
 
 The input json files can be downloaded from https://github.com/harvardnlp/boxscore-data
@@ -35,11 +38,11 @@ git clone https://github.com/harvardnlp/boxscore-data.git
 cd boxscore-data
 tar -xvf rotowire.tar.bz2
 
-RAW_DATA=$MACRO_PLAN/boxscore_data/rotowire/
+RAW_DATA=$MACRO_PLAN/boxscore-data/rotowire/
 ```
 
 
-## I. Training the macro planning module
+## __I.__ Training the macro planning module
 
 The following steps will guide you through the training phase of the macro planning module.
 At all times, you should be in `$MACRO_PLAN`, on branch `main`
@@ -73,7 +76,7 @@ python create_roto_target_data.py -json_root $ROTOWIRE_JSONS -output_folder $ROT
 3: Run bpe tokenization
 ```
 ROTOWIRE_TOKENIZED=$MACRO_PLAN/rotowire-tokenized
-mkdir ROTOWIRE_TOKENIZED
+mkdir $ROTOWIRE_TOKENIZED
 
 TRAIN_FILE_1=$ROTOWIRE/train.pp  
 CODE=$ROTOWIRE_TOKENIZED/code  
@@ -101,7 +104,7 @@ mkdir $PREPROCESS
 IDENTIFIER=rotowire
 
 cd $MACRO_PLAN
-python preprocess.py -train_src $ROTOWIRE_TOKENIZED/train.bpe.pp \ 
+python preprocess.py -train_src $ROTOWIRE_TOKENIZED/train.bpe.pp \
                      -train_tgt $ROTOWIRE/train.macroplan \
                      -valid_src $ROTOWIRE_TOKENIZED/valid.bpe.pp \
                      -valid_tgt $ROTOWIRE/valid.macroplan \
@@ -120,7 +123,7 @@ MODELS=$MACRO_PLAN/models
 mkdir $MODELS
 mkdir $MODELS/$IDENTIFIER
 
-python train.py -data $PREPROCESS/roto \
+python train.py -data $PREPROCESS/$IDENTIFIER \
                 -save_model $MODELS/$IDENTIFIER/model \
                 -encoder_type macroplan -layers 1 \
                 -decoder_type pointer \
@@ -146,7 +149,7 @@ python train.py -data $PREPROCESS/roto \
                 --keep_checkpoint 15
 ```
 
-II. Using the macro planning module for inference
+## __II.__ Using the macro planning module for inference
 
 1. Construct inference time plan input
 
@@ -179,6 +182,7 @@ FILENAME=$DATASET_TYPE.bpe.$SUFFIX.pp
 GEN=$MACRO_PLAN/gen
 mkdir $GEN
 
+cd $MACRO_PLAN
 python translate.py -model $MODEL_PATH \
                     -src $ROTOWIRE_TOKENIZED/${FILENAME} \
                     -output $GEN/$IDENTIFIER-beam5_gens.txt \
@@ -195,9 +199,10 @@ python translate.py -model $MODEL_PATH \
 4. Run script to create paragraph plans conformant for generation
 
 ```
-python construct_inference_roto_plan.py -json_root $ROTOWIRE_JSONS \  
+cd $MACRO_PLAN.scripts
+python construct_inference_roto_plan.py -json_root $ROTOWIRE_JSONS \
                                         -output_folder $ROTOWIRE \
-                                        -dataset_type ${DATASET_TYPE} 
+                                        -dataset_type ${DATASET_TYPE} \
                                         -suffix stage2
 ``` 
 Note: here we omit the ```for_macroplanning``` flag
@@ -205,7 +210,7 @@ Note: here we omit the ```for_macroplanning``` flag
 5. Create the macro plan conformant for generation
 
 ```
-SRC_FILE_NAME=$ROTOWIRE/$DATASET_TYPE.stage2.pp
+SRC_FILE=$ROTOWIRE/$DATASET_TYPE.stage2.pp
 
 python create_macro_plan_from_index.py -src_file $SRC_FILE \
                                        -macro_plan_indices $GEN/$IDENTIFIER-beam5_gens.txt \
@@ -224,14 +229,14 @@ cd $MACRO_PLAN/scripts
 python convert_roto_plan.py -roto_plan ${BASE_ROTO_PLAN} -output_file ${BASE_OUTPUT_FILE}
 ```
 
-III. Train the NLG system, that generates summaries from plans
+## __III.__ Train the NLG system, that generates summaries from plans
 
 We now switch to `$DOC_GEN`. Make sure you are on the correc branch:  
 (Note that we will reuse most of the env. variable names, so be careful)
 
 ```bash
 cd $DOC_GEN
-git branch summary_gen
+git checkout summary_gen
 ```
 
 
@@ -239,7 +244,7 @@ git branch summary_gen
 
 ```
 ROTOWIRE=$DOC_GEN/rotowire
-cd $DOC_GEN/scripts
+cd $MACRO_PLAN/scripts
 
 python create_roto_target_data_gen.py -json_root $ROTOWIRE_JSONS \
                                       -output_folder $ROTOWIRE \
@@ -288,7 +293,7 @@ python apply_bpe.py -c $CODE --vocabulary-threshold 10 --glossaries "<segment[0-
 
 3. Preprocess the plan-to-summary dataset
 ```
-$PREPROCESS=$DOC_GEN/preprocess
+PREPROCESS=$DOC_GEN/preprocess
 mkdir $PREPROCESS
 
 IDENTIFIER=rotowire
@@ -312,6 +317,7 @@ MODELS=$DOC_GEN/models
 mkdir $MODELS
 mkdir $MODELS/$IDENTIFIER
 
+cd $DOC_GEN
 python train.py -data $PREPROCESS/$IDENTIFIER \
                 -save_model $MODELS/$IDENTIFIER/model \
                 -encoder_type brnn \
@@ -341,7 +347,7 @@ python train.py -data $PREPROCESS/$IDENTIFIER \
                 --learning_rate_decay 0.97
 ```
 
-IV. Generate a summary, using a plan from step II.
+## __IV.__ Generate a summary, using a plan from step II.
 
 1. Apply bpe to plan obtained in Step II.6. 
 ```
@@ -359,6 +365,7 @@ MODEL_PATH=$MODELS/$IDENTIFIER/<best_checkpoint>
 GEN=$DOC_GEN/gen
 mkdir $GEN
 
+cd $DOC_GEN
 python translate.py -model $MODEL_PATH \
                     -src $BPE_FILENAME \
                     -output $GEN/$IDENTIFIER-bpe_beam5_gens.txt \
@@ -371,8 +378,7 @@ python translate.py -model $MODEL_PATH \
 
 3. Strip the ```@@@``` characters and <segmentN> tags.
 ```
-sed -r 's/(@@ )|(@@ ?$)//g; s/<segment[0-9]+> //g' $GEN/$IDENTIFIER-bpe_beam5_gens.txt \  
->  $GEN/$IDENTIFIER-beam5_gens.txt
+sed -r 's/(@@ )|(@@ ?$)//g; s/<segment[0-9]+> //g' $GEN/$IDENTIFIER-bpe_beam5_gens.txt >  $GEN/$IDENTIFIER-beam5_gens.txt
 ```
 
 
