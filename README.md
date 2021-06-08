@@ -27,5 +27,5 @@ The `main` branch contains code to generate macro plans from input verbalization
 
 The test outputs and trained models can be downloaded from the google drive link https://drive.google.com/drive/folders/1jJjq5IvuBKNLTAe7fuwlDYParrxpK-WD?usp=sharing
 
-The steps for training and inference for RotoWire dataset are given in [README_RotoWire](README_RotoWire.md).
+The steps for training and inference for RotoWire dataset are given in [README_RotoWire](README_RotoWire.md), and for MLB dataset are given in [README_MLB](README_MLB.md).
 
