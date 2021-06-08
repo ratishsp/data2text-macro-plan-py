@@ -3,7 +3,7 @@
 This repo is organized in two branches:
 
 - `main`: macro-planning training and inference
-- `summary_gen`: text generation training and inference
+- `summary_gen_roto`: text generation training and inference
 
 To leverage these two branches as best as possible, clone this repo twice, and
 name the copies `macro_plan` and `doc_gen`. Then, set env. variables to the
@@ -21,7 +21,7 @@ cd $MACRO_PLAN
 git checkout main
 
 cd $DOC_GEN
-git checkout summary_gen
+git checkout summary_gen_roto
 ```
 
 Note that sections I and III are for training, and sections II and IV are for inference.  
@@ -236,7 +236,7 @@ We now switch to `$DOC_GEN`. Make sure you are on the correc branch:
 
 ```bash
 cd $DOC_GEN
-git checkout summary_gen
+git checkout summary_gen_roto
 ```
 
 
