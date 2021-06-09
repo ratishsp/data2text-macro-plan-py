@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```
 
 ## Code Details
-The `main` branch contains code to generate macro plans from input verbalization. The code for training summary generation is in `summary_gen` branch.
+The `main` branch contains code to generate macro plans from input verbalization. The code for training summary generation is in `summary_gen` branch for MLB and `summary_gen_roto` for RotoWire dataset.
 
 The test outputs and trained models can be downloaded from the google drive link https://drive.google.com/drive/folders/1jJjq5IvuBKNLTAe7fuwlDYParrxpK-WD?usp=sharing
 
