@@ -372,6 +372,11 @@ sed -r 's/(@@ )|(@@ ?$)| <segment>//g' $GEN/$IDENTIFIER-bpe_beam5_gens.txt >  $G
 
 
 ## Evaluation
+Note: The IE evaluation has a preprocessing step of identifying mentions of innings. For this, we make use of GPT-2 to check if an ordinal adjective is an inning or not. The details are mentioned in the paper. You can install the required version of HuggingFace Transformers library using the below command.
+```
+pip install transformers==2.3
+```
+The detailed evaluation steps are below:
 
 1. Compute BLEU
 ```
