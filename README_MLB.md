@@ -1,3 +1,4 @@
+
 # Training and Inference on the MLB Dataset
 
 This repo is organized in two branches:
@@ -366,8 +367,7 @@ python translate.py -model $MODEL_PATH \
 
 3. Strip the ```@@@``` characters.
 ```
-sed -r 's/(@@ )|(@@ ?$)//g' $GEN/$IDENTIFIER-bpe_beam5_gens.txt >  $GEN/$IDENTIFIER-segment-beam5_gens.txt
-sed -r 's/ <segment>//g' $GEN/$IDENTIFIER-segment-beam5_gens.txt >  $GEN/$IDENTIFIER-beam5_gens.txt
+sed -r 's/(@@ )|(@@ ?$)| <segment>//g' $GEN/$IDENTIFIER-bpe_beam5_gens.txt >  $GEN/$IDENTIFIER-beam5_gens.txt
 ```
 
 
@@ -383,6 +383,12 @@ perl ~/mosesdecoder/scripts/generic/multi-bleu.perl  $REFERENCE < $GENS/$IDENTIF
 
 ```
 cd $MACRO_PLAN/scripts
+```
+```
+python add_segment_marker.py -input_file $GEN/$IDENTIFIER-beam5_gens.txt -output_file \  
+$GEN/$IDENTIFIER-segment-beam5_gens.txt
+```
+```
 python inning_prediction_offline.py -input_file $GEN/$IDENTIFIER-segment-beam5_gens.txt \
 -output_file $GEN/$IDENTIFIER-inning-map-beam5_gens.txt
 ```
