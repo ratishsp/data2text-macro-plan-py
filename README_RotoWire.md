@@ -177,7 +177,7 @@ python apply_bpe.py -c $CODE --glossaries "WON-[0-9]+" "LOST-[0-9]+" --vocabular
 
 3. Run inference for macro planning
 ```
-MODEL_PATH=$MODELS/$IDENTIFIER/<best_checkpoint>  # choose depending on validation accuracy
+MODEL_PATH=$MODELS/$IDENTIFIER/<best_checkpoint>  # In case of RotoWire, we choose the checkpoint which maximizes the CO on text generation.
 FILENAME=$DATASET_TYPE.bpe.$SUFFIX.pp
 GEN=$MACRO_PLAN/gen
 mkdir $GEN

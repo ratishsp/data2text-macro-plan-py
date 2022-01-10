@@ -165,7 +165,7 @@ python apply_bpe.py -c $CODE --vocabulary-threshold 10 <$VALID_FILE_1 >$VALID_BP
 
 3. Run inference for macro planning
 ```
-MODEL_PATH=$MODELS/$IDENTIFIER/<best_checkpoint>
+MODEL_PATH=$MODELS/$IDENTIFIER/<best_checkpoint>  # In case of MLB, we choose the checkpoint which maximizes the CS Recall on text generation.
 FILENAME=$DATASET_TYPE.bpe.$SUFFIX.pp
 GEN=$MACRO_PLAN/gen
 mkdir $GEN
