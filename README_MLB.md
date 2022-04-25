@@ -45,6 +45,8 @@ MLB_JSONS=$MACRO_PLAN/json/mlb/
 The following steps will guide you through the training phase of the macro planning module.
 At all times, you should be in `$MACRO_PLAN`, on branch `main`
 
+Copy files related to inning detection from [here](https://drive.google.com/drive/folders/19u99YQqoG7K4xIq9XdeZgPGr2jvQSCIe) to ```${MACRO_PLAN}/data```
+
 1: Create the macro planning dataset:
 
 ```
